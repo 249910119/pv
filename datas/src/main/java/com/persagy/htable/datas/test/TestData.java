@@ -2,6 +2,7 @@ package com.persagy.htable.datas.test;
 
 import com.persagy.htable.datas.utils.HbaseUtils;
 import com.persagy.htable.datas.utils.OptionTypeEnum;
+import org.apache.hadoop.ha.HAServiceProtocol;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableName;
@@ -12,7 +13,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestData {
 
@@ -62,13 +65,24 @@ public class TestData {
         connection.close();
     }
 
+
     @Test
     public void testInstance() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
-        String date = "20200706104500";
-        System.out.println(date.substring(0, 12));
+        Map<String, Student> studentMap = new HashMap<>();
 
+        Student student = new Student();
+        student.setName("wdl");
 
+        studentMap.put("a", student);
+
+        System.out.println(studentMap);
+
+        student.setName(student.getName() + "lxm");
+        System.out.println(studentMap);
+
+        studentMap.get("a").setName(student.getName() + "lxm");
+        System.out.println(studentMap);
     }
 
 
@@ -79,5 +93,25 @@ public class TestData {
         for (String s : split) {
             System.out.println(s);
         }
+    }
+}
+
+class Student{
+
+    String name;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

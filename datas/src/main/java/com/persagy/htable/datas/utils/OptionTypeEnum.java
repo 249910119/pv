@@ -1,7 +1,5 @@
 package com.persagy.htable.datas.utils;
 
-import com.persagy.htable.datas.test.AccruedCleanEnum;
-
 /**
  * 汇总数据类型枚举
  */
@@ -12,7 +10,7 @@ public enum OptionTypeEnum {
     //读数据量
     read_datas_total("2","read_bytes"),
     //写数据量
-    write_datas_total("3","insert_bytes,update_bytes"),
+    write_datas_total("3","insert_bytes,update_bytes,delete_bytes"),
     //增数据量
     add_datas_total("4","insert_bytes"),
     //改数据量

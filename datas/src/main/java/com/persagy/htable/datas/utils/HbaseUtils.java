@@ -23,9 +23,10 @@ import java.util.Map;
 
 public class HbaseUtils {
 
-    public static Connection connection;
+//    public static Connection connection;
 
     public static Connection getConnection(){
+
         Connection connection = null;
         Configuration conf = HBaseConfiguration.create();
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, HbaseDBConstant.HBASE_ZOOKEEPER_IP);
@@ -41,6 +42,7 @@ public class HbaseUtils {
     /**
      * 初始化 Hbase 连接
      */
+    /*
     static{
 
         Configuration conf = HBaseConfiguration.create();
@@ -55,6 +57,7 @@ public class HbaseUtils {
         }
 
     }
+    */
 
     /**
      * rowKey 过滤
@@ -89,12 +92,13 @@ public class HbaseUtils {
 
     /**
      * 查询结果
-     * @param tableName 查询的表
+     * @param queryTableName 查询的表
      * @param optionType 下拉框选择查询的数据
      * @param rowKeyFilter rowKey 过滤器
      * @return
      */
-    public static ResultScanner getResultScanner(String tableName,
+    public static ResultScanner getResultScanner(Connection connection,
+                                                 String queryTableName,
                                                  String optionType,
                                                  Filter rowKeyFilter
                                                  ) {
@@ -102,7 +106,7 @@ public class HbaseUtils {
 
         try {
 
-            Table htable = connection.getTable(TableName.valueOf(tableName));
+            Table htable = connection.getTable(TableName.valueOf(queryTableName));
 
             Scan scan = new Scan();
 
@@ -146,7 +150,13 @@ public class HbaseUtils {
         }
     }
 
-    private TableInfo getTableInfoCell(List<Cell> cells, String tableName){
+    /**
+     * cell 转为实体类 TableInfo
+     * @param cells 数据库查出的 cell 集合
+     * @param queryTableName 查询的表
+     * @return
+     */
+    public static TableInfo getTableInfoCell(List<Cell> cells, String queryTableName){
 
         TableInfo tableInfo = new TableInfo();
 
@@ -157,7 +167,10 @@ public class HbaseUtils {
             String[] rowKeyInfos = rowKey.split(",");
 
             tableInfo.setTableId(rowKey);
-            if (tableName.split("_")[4] == "1"){
+            tableInfo.setDbName(queryTableName.split(":")[0]);
+            tableInfo.setOperationTime(System.currentTimeMillis());
+
+            if (queryTableName.split("_")[4] == "1"){
                 tableInfo.setTableName(rowKeyInfos[0]);
                 tableInfo.setPointTime(rowKeyInfos[1].substring(0, 12));
             } else {
@@ -170,14 +183,33 @@ public class HbaseUtils {
                 byte[] cellBytes = CellUtil.cloneValue(c);
                 Long value = cellBytes.length > 0 ? Bytes.toLong(cellBytes) : 0;
 
+                if ("read_lines".equals(key)) {
+                    tableInfo.setReadLines(value);
+                } else if ("read_bytes".equals(key)){
+                    tableInfo.setReadBytes(value);
+                } else if ("insert_lines".equals(key)){
+                    tableInfo.setInsertLines(value);
+                } else if ("insert_bytes".equals(key)){
+                    tableInfo.setInsertBytes(value);
+                } else if ("update_lines".equals(key)){
+                    tableInfo.setUpdateLines(value);
+                } else if ("update_bytes".equals(key)){
+                    tableInfo.setUpdateBytes(value);
+                } else if ("delete_lines".equals(key)){
+                    tableInfo.setDeleteLines(value);
+                } else if ("delete_bytes".equals(key)){
+                    tableInfo.setDeleteBytes(value);
+                }
             }
+
         }
-        return null;
+
+        return tableInfo;
     }
 
     public JSONArray scanDemo(String table) throws Exception {
 
-        Table htable = connection.getTable(TableName.valueOf(table));
+        Table htable = getConnection().getTable(TableName.valueOf(table));
 
         JSONArray result = new JSONArray();
         Scan scan = new Scan();

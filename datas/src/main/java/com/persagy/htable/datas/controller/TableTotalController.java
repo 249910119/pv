@@ -28,8 +28,7 @@ public class TableTotalController {
                               @RequestParam("end_date") String endDate,
                               @RequestParam("option_type") String optionType){
 
-        JSONObject result = new JSONObject();
-
+        JSONObject result = tableTotalService.getAllTableInfo(startDate, endDate, "1", "db_public:zillion_meta_stat_1_202007");
 
         return result;
     }

@@ -1,94 +1,94 @@
 package com.persagy.htable.datas.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.persagy.htable.datas.bean.TableInfo;
 import com.persagy.htable.datas.service.TableTotalService;
+import com.persagy.htable.datas.utils.HbaseUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TableTotalServiceImpl implements TableTotalService {
 
+    @Override
+    public JSONObject getAllTableInfo(String startDate, String endDate, String optionType, String queryTableName) {
 
-    @Test
-    public void getHtable() throws IOException {
+        JSONObject jsonObject = new JSONObject();
 
-        JSONArray result = new JSONArray();
-        Configuration conf = HBaseConfiguration.create();
+        Connection connection = HbaseUtils.getConnection();
 
-        conf.set("hbase.zookeeper.quorum", "192.168.100.51");
-        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        Map<String, String> rowKeyFilterMap = new HashMap<>();
+        rowKeyFilterMap.put(startDate, endDate);
 
-        String tableName = "db_public:zillion_meta_stat_2_202007";
+        Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
+        ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
 
-        HTable hTable = new HTable(conf, tableName);
+        List<TableInfo> tableInfoList = new ArrayList<>();
 
-        Scan scan = new Scan();
+        Map<String, TableInfo> tableInfoMap = new HashMap<>();
 
-        ResultScanner scanner = hTable.getScanner(scan);
+        for (Result result : resultScanner) {
 
-        int i = 0;
-        while (true) {
-            Result res = scanner.next();
-            i++;
-            if (res == null) {
-                break;
+            List<Cell> cells = result.listCells();
+
+            TableInfo tableInfo = HbaseUtils.getTableInfoCell(cells, queryTableName);
+
+            TableInfo info = tableInfoMap.get(tableInfo.getPointTime());
+
+            if (info == null) {
+                tableInfoMap.put(tableInfo.getPointTime(), tableInfo);
+            } else {
+                TableInfo combineTableInfo = this.combineTableInfo(info, tableInfo);
+                tableInfoMap.put(tableInfo.getPointTime(), combineTableInfo);
             }
 
-            //解析数据
-            JSONObject cellResult = getZillionCell(res.listCells());
-            System.out.println(i + "," + cellResult);
-            result.add(res);
         }
-        scanner.close();
-        hTable.close();
 
+        String jsonString = JSON.toJSONString(tableInfoMap);
+
+        HbaseUtils.closeHbaseConnection(connection);
+
+        return JSON.parseObject(jsonString);
     }
 
-    private JSONObject getZillionCell(List<Cell> cells) {
-        JSONObject result = new JSONObject();
-        for (Cell cell : cells) {
-            byte[] row_name_bytes = CellUtil.cloneRow(cell);
-            String row_name = Bytes.toString(row_name_bytes);
-            byte[] column_name_bytes = CellUtil.cloneQualifier(cell);
-            String column_name = Bytes.toString(column_name_bytes);
-            byte[] cell_bytes = CellUtil.cloneValue(cell);
-            Long value = null;
-            if (cell_bytes.length > 0) {
-                value = Bytes.toLong(cell_bytes);
-            }
-            result.put("row", row_name);
-            result.put(column_name, value);
-        }
-        return result;
+    private TableInfo combineTableInfo(TableInfo t1, TableInfo t2) {
+
+        TableInfo t = new TableInfo();
+
+        t.setTableId(t1.tableId);
+        t.setTableName(t1.getTableName());
+        t.setPointTime(t1.getPointTime());
+        t.setDbName(t1.getDbName());
+//        t.setOperationTime(System.currentTimeMillis());
+
+        t.setReadBytes(t1.getReadBytes() + t2.getReadBytes());
+        t.setReadLines(t1.getReadLines() + t2.getReadLines());
+
+        t.setInsertBytes(t1.getInsertBytes() + t2.getInsertBytes());
+        t.setInsertLines(t1.getInsertLines() + t2.getInsertLines());
+
+        t.setUpdateBytes(t1.getUpdateBytes() + t2.getUpdateBytes());
+        t.setInsertLines(t1.getUpdateLines() + t2.getUpdateLines());
+
+        t.setDeleteBytes(t1.getDeleteBytes() + t2.getDeleteBytes());
+        t.setDeleteLines(t1.getDeleteLines() + t2.getDeleteLines());
+
+        return t;
     }
 
-
-    @Override
-    public List<String> getHtablesName() {
-
-        Configuration conf = HBaseConfiguration.create();
-
-        conf.set("hbase.zookeeper.quorum", "192.168.100.51");
-        conf.set("hbase.zookeeper.property.clientPort", "2181");
-
-        return null;
-    }
-
-    @Override
-    public JSONObject getAllTableInfo(String startDate, String endDate, String optionType) {
-        return null;
-    }
 }
