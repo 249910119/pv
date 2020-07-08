@@ -2,7 +2,6 @@ package com.persagy.htable.datas.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.inject.internal.cglib.core.$LocalVariablesSorter;
 import com.persagy.htable.datas.bean.TableInfo;
 import com.persagy.htable.datas.constant.HbaseDBConstant;
 import org.apache.hadoop.conf.Configuration;
@@ -17,17 +16,21 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HbaseUtils {
 
-//    public static Connection connection;
+    public static Connection connection = null;
+    public static ResultScanner scanner = null;
+    public static Table htable =  null;
+
+    public static TableInfo tableInfo = new TableInfo();
+
 
     public static Connection getConnection(){
 
-        Connection connection = null;
+//        Connection connection = null;
         Configuration conf = HBaseConfiguration.create();
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, HbaseDBConstant.HBASE_ZOOKEEPER_IP);
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
@@ -76,7 +79,10 @@ public class HbaseUtils {
                 byte[] start = Bytes.toBytes(filterKeys.getKey());
                 byte[] end = Bytes.toBytes(filterKeys.getValue());
 
-                MultiRowRangeFilter.RowRange rowRange = new MultiRowRangeFilter.RowRange(start, true, end, true);
+                MultiRowRangeFilter.RowRange rowRange = new MultiRowRangeFilter.RowRange(start,
+                        true,
+                        end,
+                        true);
 
                 rangeList_new.add(rowRange);
             }
@@ -102,16 +108,17 @@ public class HbaseUtils {
                                                  String optionType,
                                                  Filter rowKeyFilter
                                                  ) {
-        ResultScanner scanner = null;
 
         try {
 
-            Table htable = connection.getTable(TableName.valueOf(queryTableName));
+            htable = connection.getTable(TableName.valueOf(queryTableName));
 
             Scan scan = new Scan();
 
             //添加rowKey过滤
-            scan.setFilter(rowKeyFilter);
+            if (rowKeyFilter != null){
+                scan.setFilter(rowKeyFilter);
+            }
 
             //添加列族过滤或者列过滤
             String optionTypeNames = OptionTypeEnum.getName(optionType);
@@ -119,14 +126,16 @@ public class HbaseUtils {
                 return null;
             }
 
+            scan.addFamily(Bytes.toBytes(HbaseDBConstant.FAMILY_NAME));
+
             for (String columnName : optionTypeNames.split(",")) {
                 scan.addColumn(Bytes.toBytes(HbaseDBConstant.FAMILY_NAME),Bytes.toBytes(columnName));
             }
 
             scanner = htable.getScanner(scan);
 
-            scanner.close();
-            htable.close();
+//            scanner.close();
+//            htable.close();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -138,12 +147,17 @@ public class HbaseUtils {
 
     /**
      * 关闭连接
-     * @param connection
      */
-    public static void closeHbaseConnection(Connection connection){
+    public static void closeHbaseConnection(){
         try {
             if (connection != null){
                 connection.close();
+            }
+            if (scanner != null){
+                scanner.close();
+            }
+            if (htable != null){
+                htable.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -158,7 +172,7 @@ public class HbaseUtils {
      */
     public static TableInfo getTableInfoCell(List<Cell> cells, String queryTableName){
 
-        TableInfo tableInfo = new TableInfo();
+        tableInfo.resetValue();
 
         if (cells != null && cells.size() > 0){
             Cell cell = cells.get(0);
@@ -179,9 +193,15 @@ public class HbaseUtils {
             }
 
             for (Cell c : cells) {
+
                 String key = Bytes.toString(CellUtil.cloneQualifier(c));
+                System.out.println(key);
+
                 byte[] cellBytes = CellUtil.cloneValue(c);
-                Long value = cellBytes.length > 0 ? Bytes.toLong(cellBytes) : 0;
+                Long value = 0L;
+                if (cellBytes.length > 0) {
+                    value = Bytes.toLong(cellBytes);
+                }
 
                 if ("read_lines".equals(key)) {
                     tableInfo.setReadLines(value);

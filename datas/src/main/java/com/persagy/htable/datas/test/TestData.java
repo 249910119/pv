@@ -1,18 +1,23 @@
 package com.persagy.htable.datas.test;
 
+import com.persagy.htable.datas.utils.DateUtils;
 import com.persagy.htable.datas.utils.HbaseUtils;
 import com.persagy.htable.datas.utils.OptionTypeEnum;
-import org.apache.hadoop.ha.HAServiceProtocol;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.lf5.util.DateFormatManager;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,28 +26,25 @@ public class TestData {
 
     @Test
     public void testHbaseConnection() throws IOException {
+
         Connection connection = HbaseUtils.getConnection();
 
-        Table table = connection.getTable(TableName.valueOf("db_public:zillion_meta_stat_2_202007"));
+        Map<String, String> map = new HashMap<>();
 
-        Scan scan = new Scan();
+        map.put("202007061035", "202007061045");
 
-        scan.addFamily(Bytes.toBytes("f"));
+        Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(map);
+        ResultScanner resultScanner = HbaseUtils.getResultScanner(connection,
+                "db_public:zillion_meta_stat_2_202007",
+                "1",
+                rowKeyFilter);
 
-        String names = OptionTypeEnum.getName("3");
-        String[] columnNames = names.split(",");
-        for (String columnName : columnNames) {
-            scan.addColumn(Bytes.toBytes("f"),Bytes.toBytes(columnName));
-        }
-//        scan.addColumn(Bytes.toBytes("f"),Bytes.toBytes("insert_bytes"));
-
-        ResultScanner results = table.getScanner(scan);
 
         int count = 0;
-        for (Result result : results) {
+        for (Result result : resultScanner) {
 
             List<Cell> cells = result.listCells();
-            Cell cell1 = cells.get(0);
+
             for (Cell cell : cells) {
                 System.out.println("第" + count + "个cell");
 
@@ -57,9 +59,9 @@ public class TestData {
                 }
             }
             count ++;
-            if (count == 20) {
+            /*if (count == 20) {
                 break;
-            }
+            }*/
         }
 
         connection.close();
@@ -69,20 +71,13 @@ public class TestData {
     @Test
     public void testInstance() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
-        Map<String, Student> studentMap = new HashMap<>();
+        Date date = new Date();
 
-        Student student = new Student();
-        student.setName("wdl");
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
-        studentMap.put("a", student);
+        String dateToString = format.format(date);
 
-        System.out.println(studentMap);
-
-        student.setName(student.getName() + "lxm");
-        System.out.println(studentMap);
-
-        studentMap.get("a").setName(student.getName() + "lxm");
-        System.out.println(studentMap);
+        System.out.println(dateToString);
     }
 
 
@@ -93,25 +88,5 @@ public class TestData {
         for (String s : split) {
             System.out.println(s);
         }
-    }
-}
-
-class Student{
-
-    String name;
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return "Student{" +
-                "name='" + name + '\'' +
-                '}';
     }
 }

@@ -11,6 +11,7 @@
     <artifactId>datas</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>datas</name>
+    <packaging>jar</packaging>
     <description>Show HTable data</description>
 
     <properties>

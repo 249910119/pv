@@ -1,6 +1,7 @@
 package com.persagy.htable.datas.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.persagy.htable.datas.constant.HbaseDBConstant;
 import com.persagy.htable.datas.service.TableTotalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +29,9 @@ public class TableTotalController {
                               @RequestParam("end_date") String endDate,
                               @RequestParam("option_type") String optionType){
 
-        JSONObject result = tableTotalService.getAllTableInfo(startDate, endDate, "1", "db_public:zillion_meta_stat_1_202007");
+        String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
+
+        JSONObject result = tableTotalService.getAllTableInfo(startDate, endDate, optionType, queryTableName);
 
         return result;
     }
@@ -45,7 +48,9 @@ public class TableTotalController {
                                        @RequestParam("end_date") String endDate,
                                        @RequestParam("option_type") String optionType){
 
-        JSONObject result = new JSONObject();
+        String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
+
+        JSONObject result = tableTotalService.getAllTableInfo(startDate, endDate, optionType, queryTableName);
 
 
         return result;

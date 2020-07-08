@@ -48,4 +48,19 @@ public class TableInfo {
     //时间标记
     public String pointTime;
 
+    public void resetValue(){
+        this.tableId = "";
+        this.tableName = "";
+        this.dbName = "";
+        this.readLines = 0L;
+        this.readBytes = 0L;
+        this.insertLines = 0L;
+        this.insertBytes = 0L;
+        this.updateLines = 0L;
+        this.updateBytes = 0L;
+        this.deleteLines = 0L;
+        this.deleteBytes = 0L;
+        this.operationTime = 0L;
+        this.pointTime = "";
+    }
 }

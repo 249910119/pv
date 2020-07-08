@@ -1,22 +1,17 @@
 package com.persagy.htable.datas.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.persagy.htable.datas.bean.TableInfo;
 import com.persagy.htable.datas.service.TableTotalService;
 import com.persagy.htable.datas.utils.HbaseUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellUtil;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.junit.Test;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +23,7 @@ public class TableTotalServiceImpl implements TableTotalService {
     @Override
     public JSONObject getAllTableInfo(String startDate, String endDate, String optionType, String queryTableName) {
 
-        JSONObject jsonObject = new JSONObject();
+//        JSONObject jsonObject = new JSONObject();
 
         Connection connection = HbaseUtils.getConnection();
 
@@ -36,9 +31,8 @@ public class TableTotalServiceImpl implements TableTotalService {
         rowKeyFilterMap.put(startDate, endDate);
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
-        ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
 
-        List<TableInfo> tableInfoList = new ArrayList<>();
+        ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
 
         Map<String, TableInfo> tableInfoMap = new HashMap<>();
 
@@ -54,41 +48,41 @@ public class TableTotalServiceImpl implements TableTotalService {
                 tableInfoMap.put(tableInfo.getPointTime(), tableInfo);
             } else {
                 TableInfo combineTableInfo = this.combineTableInfo(info, tableInfo);
-                tableInfoMap.put(tableInfo.getPointTime(), combineTableInfo);
+                tableInfoMap.put(combineTableInfo.getPointTime(), combineTableInfo);
             }
 
         }
 
         String jsonString = JSON.toJSONString(tableInfoMap);
 
-        HbaseUtils.closeHbaseConnection(connection);
+        HbaseUtils.closeHbaseConnection();
 
         return JSON.parseObject(jsonString);
     }
 
+//    public TableInfo t = new TableInfo();
+
     private TableInfo combineTableInfo(TableInfo t1, TableInfo t2) {
 
-        TableInfo t = new TableInfo();
-
-        t.setTableId(t1.tableId);
-        t.setTableName(t1.getTableName());
-        t.setPointTime(t1.getPointTime());
-        t.setDbName(t1.getDbName());
+//        t1.setTableId(t1.tableId);
+//        t1.setTableName(t1.getTableName());
+//        t1.setPointTime(t1.getPointTime());
+//        t1.setDbName(t1.getDbName());
 //        t.setOperationTime(System.currentTimeMillis());
 
-        t.setReadBytes(t1.getReadBytes() + t2.getReadBytes());
-        t.setReadLines(t1.getReadLines() + t2.getReadLines());
+        t1.setReadBytes(t1.getReadBytes() + t2.getReadBytes());
+        t1.setReadLines(t1.getReadLines() + t2.getReadLines());
 
-        t.setInsertBytes(t1.getInsertBytes() + t2.getInsertBytes());
-        t.setInsertLines(t1.getInsertLines() + t2.getInsertLines());
+        t1.setInsertBytes(t1.getInsertBytes() + t2.getInsertBytes());
+        t1.setInsertLines(t1.getInsertLines() + t2.getInsertLines());
 
-        t.setUpdateBytes(t1.getUpdateBytes() + t2.getUpdateBytes());
-        t.setInsertLines(t1.getUpdateLines() + t2.getUpdateLines());
+        t1.setUpdateBytes(t1.getUpdateBytes() + t2.getUpdateBytes());
+        t1.setInsertLines(t1.getUpdateLines() + t2.getUpdateLines());
 
-        t.setDeleteBytes(t1.getDeleteBytes() + t2.getDeleteBytes());
-        t.setDeleteLines(t1.getDeleteLines() + t2.getDeleteLines());
+        t1.setDeleteBytes(t1.getDeleteBytes() + t2.getDeleteBytes());
+        t1.setDeleteLines(t1.getDeleteLines() + t2.getDeleteLines());
 
-        return t;
+        return t1;
     }
 
 }
