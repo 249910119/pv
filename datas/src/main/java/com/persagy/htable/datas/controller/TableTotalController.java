@@ -25,15 +25,15 @@ public class TableTotalController {
      * @return
      */
     @GetMapping("table_total_chart")
-    public JSONObject getAllTableTotalToChart(@RequestParam("start_date") String startDate,
+    public String getAllTableTotalToChart(@RequestParam("start_date") String startDate,
                               @RequestParam("end_date") String endDate,
                               @RequestParam("option_type") String optionType){
 
         String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
 
-        JSONObject result = tableTotalService.getAllTableInfo(startDate, endDate, optionType, queryTableName);
+        JSONObject result = tableTotalService.getCollectDataBySimpleTable(startDate, endDate, optionType, queryTableName);
 
-        return result;
+        return result.toJSONString();
     }
 
     /**
@@ -44,16 +44,15 @@ public class TableTotalController {
      * @return
      */
     @GetMapping("table_total")
-    public JSONObject getAllTableTotal(@RequestParam("start_date") String startDate,
+    public String getAllTableTotal(@RequestParam("start_date") String startDate,
                                        @RequestParam("end_date") String endDate,
                                        @RequestParam("option_type") String optionType){
 
         String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
 
-        JSONObject result = tableTotalService.getAllTableInfo(startDate, endDate, optionType, queryTableName);
+        JSONObject result = tableTotalService.getCollectAllTable(startDate, endDate, optionType, queryTableName);
 
-
-        return result;
+        return result.toJSONString();
     }
 
 

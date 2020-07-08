@@ -5,7 +5,7 @@ package com.persagy.htable.datas.utils;
  */
 public class DateUtils {
 
-    public String getDate(){
+    public String getDateMonth(){
         String date = "20200706103500";
 
         return null;

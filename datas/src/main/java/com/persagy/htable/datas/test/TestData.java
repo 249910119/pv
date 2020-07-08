@@ -1,5 +1,8 @@
 package com.persagy.htable.datas.test;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.persagy.htable.datas.utils.CommonUtils;
 import com.persagy.htable.datas.utils.DateUtils;
 import com.persagy.htable.datas.utils.HbaseUtils;
 import com.persagy.htable.datas.utils.OptionTypeEnum;
@@ -23,6 +26,25 @@ import java.util.List;
 import java.util.Map;
 
 public class TestData {
+
+    @Test
+    public void testSubString(){
+        String s = "{\"20200706105000\":792753,\"20200706104000\":823481,\"20200706103500\":714471,\"20200706104500\":783199}";
+        JSONObject jsonObject = JSONObject.parseObject(s);
+
+    }
+
+    @Test
+    public void testJSON(){
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("t1", 109);
+
+        Integer i1 = (Integer) jsonObject.get("221");
+
+        System.out.println(i1);
+
+    }
 
     @Test
     public void testHbaseConnection() throws IOException {

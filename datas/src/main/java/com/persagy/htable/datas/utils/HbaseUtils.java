@@ -25,9 +25,6 @@ public class HbaseUtils {
     public static ResultScanner scanner = null;
     public static Table htable =  null;
 
-    public static TableInfo tableInfo = new TableInfo();
-
-
     public static Connection getConnection(){
 
 //        Connection connection = null;
@@ -134,9 +131,6 @@ public class HbaseUtils {
 
             scanner = htable.getScanner(scan);
 
-//            scanner.close();
-//            htable.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -172,7 +166,9 @@ public class HbaseUtils {
      */
     public static TableInfo getTableInfoCell(List<Cell> cells, String queryTableName){
 
-        tableInfo.resetValue();
+        TableInfo tableInfo = new TableInfo();
+
+        tableInfo.initValue();
 
         if (cells != null && cells.size() > 0){
             Cell cell = cells.get(0);
