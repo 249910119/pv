@@ -50,7 +50,7 @@ public class TableTotalController {
 
         String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
 
-        JSONObject result = tableTotalService.getCollectAllTable(startDate, endDate, optionType, queryTableName);
+        JSONObject result = tableTotalService.getCollectDataByAllTable(startDate, endDate, optionType, queryTableName);
 
         return result.toJSONString();
     }

@@ -12,7 +12,7 @@ public interface TableTotalService {
      * @param queryTableName
      * @return
      */
-    public JSONObject getCollectAllTable(String startDate, String endDate, String optionType, String queryTableName);
+    public JSONObject getCollectDataByAllTable(String startDate, String endDate, String optionType, String queryTableName);
 
     /**
      * 按表汇总数据

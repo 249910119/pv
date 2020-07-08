@@ -8,6 +8,9 @@ import com.persagy.htable.datas.utils.HbaseUtils;
 import com.persagy.htable.datas.utils.OptionTypeEnum;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.NamespaceDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -19,30 +22,44 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TestData {
 
     @Test
-    public void testSubString(){
-        String s = "{\"20200706105000\":792753,\"20200706104000\":823481,\"20200706103500\":714471,\"20200706104500\":783199}";
-        JSONObject jsonObject = JSONObject.parseObject(s);
+    public void testDiff(){
 
     }
 
     @Test
-    public void testJSON(){
+    public void testSubString() throws ParseException {
+        String d = "20200706103500";
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("t1", 109);
+        Date date1 = format.parse("202007");
+        Date date2 = format.parse("202109");
 
-        Integer i1 = (Integer) jsonObject.get("221");
+        List<String> dateMonthDiff = DateUtils.getDateMonthDiff("202002", "202009");
+        System.out.println(dateMonthDiff);
+    }
 
-        System.out.println(i1);
+    @Test
+    public void testJSON() throws IOException {
+
+        Connection connection = HbaseUtils.getConnection();
+        Admin admin = connection.getAdmin();
+
+        NamespaceDescriptor[] namespaceDescriptors = admin.listNamespaceDescriptors();
+
+        for (NamespaceDescriptor namespaceDescriptor : namespaceDescriptors) {
+            String name = namespaceDescriptor.getName();
+            if ("default".equals(name) || "hbase".equals(name)) continue;
+            System.out.println(name);
+        }
+
+        HbaseUtils.closeHbaseConnection();
 
     }
 
