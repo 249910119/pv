@@ -10,6 +10,7 @@ import com.persagy.htable.datas.utils.DateUtils;
 import com.persagy.htable.datas.utils.HbaseUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -18,6 +19,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,30 +28,6 @@ import java.util.Map;
 
 @Service
 public class TableTotalServiceImpl implements TableTotalService {
-
-    private List<String> getQueryTableName(Connection connection, String startDate, String endDate){
-
-        List<String> monthDiffList = DateUtils.getDateMonthDiff(startDate, endDate);
-        List<String> queryTableNames = new ArrayList<>();
-
-        if (monthDiffList != null && monthDiffList.size() > 0) {
-
-            for (String month : monthDiffList) {
-
-                List<String> allNameSpace = HbaseUtils.getAllNameSpace(connection);
-
-                for (String nameSpace : allNameSpace) {
-
-                    String queryTableName = nameSpace + ":" + HbaseDBConstant.ZILLION_META_STAT_1 + month;
-
-                    queryTableNames.add(queryTableName);
-
-                }
-            }
-        }
-
-        return queryTableNames;
-    }
 
     @Override
     public JSONObject getCollectDataByAllTable(String startDate, String endDate, String optionType) {
@@ -63,7 +41,7 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
-        List<String> queryTableNames = this.getQueryTableName(connection, startDate, endDate);
+        List<String> queryTableNames = HbaseUtils.getQueryTableName(connection, startDate, endDate, HbaseDBConstant.ZILLION_META_STAT_2);
 
         for (String queryTableName : queryTableNames) {
 
@@ -114,11 +92,13 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
-        List<String> queryTableNames = this.getQueryTableName(connection, startDate, endDate);
+        List<String> queryTableNames = HbaseUtils.getQueryTableName(connection, startDate, endDate, HbaseDBConstant.ZILLION_META_STAT_2);
 
         for (String queryTableName : queryTableNames) {
 
             ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
+
+            String dbName = queryTableName.split(":")[0];
 
             for (Result result : resultScanner) {
 
@@ -131,17 +111,21 @@ public class TableTotalServiceImpl implements TableTotalService {
                         String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
                         String tableName = rowKeys.split(",")[1];
 
+                        String subTableName = CommonUtils.subTableName(tableName);
+
+                        String key = dbName + ":" + subTableName;
+
                         byte[] cellBytes = CellUtil.cloneValue(cell);
                         Long value = 0L;
                         if (cellBytes.length > 0) {
                             value = Bytes.toLong(cellBytes);
                         }
 
-                        if (jsonObject.get(tableName) == null){
-                            jsonObject.put(tableName, value);
+                        if (jsonObject.get(key) == null){
+                            jsonObject.put(key, value);
                         } else {
-                            Long r = (Long) jsonObject.get(tableName) + value;
-                            jsonObject.put(tableName, r);
+                            Long r = (Long) jsonObject.get(key) + value;
+                            jsonObject.put(key, r);
                         }
                     }
                 }
@@ -152,4 +136,6 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         return jsonObject;
     }
+
+
 }

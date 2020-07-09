@@ -61,7 +61,7 @@ public class DateUtils {
      * @return
      */
     public static String getDateMinute(String date){
-        return date.substring(0, 8);
+        return date.substring(0, 12);
     }
 
     /**
@@ -70,7 +70,7 @@ public class DateUtils {
      * @return
      */
     public static String getDateHour(String date){
-        return date.substring(0, 8);
+        return date.substring(0, 10);
     }
 
     /**

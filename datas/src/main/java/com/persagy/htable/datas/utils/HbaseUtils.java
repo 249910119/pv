@@ -25,10 +25,11 @@ public class HbaseUtils {
 
     public static Connection getConnection(){
 
-//        Connection connection = null;
         Configuration conf = HBaseConfiguration.create();
+
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, HbaseDBConstant.HBASE_ZOOKEEPER_IP);
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
+
         try {
             connection = ConnectionFactory.createConnection(conf);
         } catch (IOException e) {
@@ -54,7 +55,9 @@ public class HbaseUtils {
 
             for (NamespaceDescriptor namespaceDescriptor : namespaceDescriptors) {
                 String name = namespaceDescriptor.getName();
-                if ("default".equals(name) || "hbase".equals(name))
+                if ("default".equals(name) || "hbase".equals(name)) {
+                    continue;
+                }
                 nameSpaceList.add(name);
             }
 
@@ -159,6 +162,66 @@ public class HbaseUtils {
 
 
         return scanner;
+    }
+
+    /**
+     * 获取数据表集合
+     * @param name
+     * @param connection
+     * @return
+     */
+    public static List<String> getHTableNameList(String name, Connection connection){
+
+        List<String> list = null;
+        if (name != null && !name.isEmpty()){
+            list = new ArrayList<>();
+            try {
+                Admin admin = connection.getAdmin();
+                String[] names = name.split(":");
+                TableName[] tableNames = admin.listTableNames();
+                for (TableName tableName : tableNames) {
+                    String v = Bytes.toString(tableName.getName());
+                    if (v.contains(names[0]) && v.contains(names[1])){
+                        list.add(v);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 拼接要查询的数据库
+     * @param connection
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public static List<String> getQueryTableName(Connection connection, String startDate, String endDate, String tableName){
+
+        List<String> monthDiffList = DateUtils.getDateMonthDiff(startDate, endDate);
+
+        List<String> queryTableNames = new ArrayList<>();
+
+        if (monthDiffList != null && monthDiffList.size() > 0) {
+
+            for (String month : monthDiffList) {
+
+                List<String> allNameSpace = HbaseUtils.getAllNameSpace(connection);
+
+                for (String nameSpace : allNameSpace) {
+
+                    String queryTableName = nameSpace + ":" + tableName + month;
+
+                    queryTableNames.add(queryTableName);
+
+                }
+            }
+        }
+
+        return queryTableNames;
     }
 
     /**

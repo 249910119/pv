@@ -23,23 +23,31 @@ public class SimpleTableServiceImpl implements SimpleTableService {
 
     @Override
     public JSONObject getSimpleTable(String startDate, String endDate, String optionType, String tableName) {
+
         JSONObject jsonObject = new JSONObject();
 
         Connection connection = HbaseUtils.getConnection();
 
         Map<String, String> rowKeyFilterMap = new HashMap<>();
-        String startRowKey = tableName + "," + DateUtils.getDateMonth(startDate) + "00";
-        String endRowKey = tableName + "," + DateUtils.getDateMonth(endDate) + "00";
-        rowKeyFilterMap.put(startRowKey, endRowKey);
+
+        List<String> hTableNameList = HbaseUtils.getHTableNameList(tableName, connection);
+
+        for (String hTableName : hTableNameList) {
+            String[] v = hTableName.split(":");
+            String startRowKey = v[1] + "," + DateUtils.getDateMinute(startDate) + "00";
+            String endRowKey = v[1] + "," + DateUtils.getDateMinute(endDate) + "00|";
+            rowKeyFilterMap.put(startRowKey, endRowKey);
+        }
+
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
         List<String> monthDiffList = DateUtils.getDateMonthDiff(startDate, endDate);
 
-        if (monthDiffList != null && monthDiffList.size() > 0){
+        List<String> queryTableNames = HbaseUtils.getQueryTableName(connection, startDate, endDate, HbaseDBConstant.ZILLION_META_STAT_1);
 
-            for (String month : monthDiffList) {
+        for (String queryTableName : queryTableNames) {
 
-                String queryTableName = HbaseDBConstant.ZILLION_META_STAT_1 + month;
+            if (monthDiffList != null && monthDiffList.size() > 0){
 
                 ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
 

@@ -25,37 +25,18 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class TestData {
 
-    public String subTableName(String rowKey){
 
-        StringBuffer buff = new StringBuffer("");
-
-        if (rowKey != null && !"".equals(rowKey)){
-
-            String s = rowKey.split(",")[1].split("\\.")[0];
-
-            String[] t = s.split("_");
-
-            for (int i = 2; i < t.length; i++) {
-                if (i < t.length - 1){
-                    buff.append(t[i]).append("_");
-                } else {
-                    buff.append(t[i]);
-                }
-            }
-        }
-
-        return buff.toString();
-    }
 
     @Test
     public void testDiff(){
         String s = "zillion_data_ce_computelog,20200706105000,b2d4f0e74e05478cce244d70ef8d20f7";
         String s1 = "20200706103500,zillion_index_fjd_0_computedetail.index_1,bd4eea8315889ef97225dabf39e4dd79";
 //        String s1 = "20200706104000,zillion_data_fjd_0_metercomputetime,d6d0314a25f5b3cda1dfe5ac4eabdf39";
-        String diff = this.subTableName(s1);
+        String diff = CommonUtils.subTableName(s1);
         System.out.println(diff);
     }
 
@@ -72,7 +53,15 @@ public class TestData {
     }
 
     @Test
-    public void testJSON() throws IOException {
+    public void testTableList() throws IOException {
+        List<String> hTableNameList = HbaseUtils.getHTableNameList("db_public:fjd_0_computedetail", HbaseUtils.getConnection());
+        for (String s : hTableNameList) {
+            System.out.println(s);
+        }
+    }
+
+    @Test
+    public void testNameSpaceList() throws IOException {
 
         Connection connection = HbaseUtils.getConnection();
         Admin admin = connection.getAdmin();
@@ -81,6 +70,7 @@ public class TestData {
 
         for (NamespaceDescriptor namespaceDescriptor : namespaceDescriptors) {
             String name = namespaceDescriptor.getName();
+
             if ("default".equals(name) || "hbase".equals(name)) continue;
             System.out.println(name);
         }
@@ -96,11 +86,11 @@ public class TestData {
 
         Map<String, String> map = new HashMap<>();
 
-        map.put("202007061035", "202007061045");
+        map.put("zillion_data_ce_computelog,20200706102500", "zillion_data_ce_computelog,20200706103500|");
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(map);
         ResultScanner resultScanner = HbaseUtils.getResultScanner(connection,
-                "db_public:zillion_meta_stat_2_202007",
+                "db_public:zillion_meta_stat_1_202007",
                 "1",
                 rowKeyFilter);
 

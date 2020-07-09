@@ -2,7 +2,9 @@ package com.persagy.htable.datas.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.persagy.htable.datas.service.SimpleTableService;
 import com.persagy.htable.datas.service.TableTotalService;
+import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SimpleTableController {
 
     @Autowired
-    TableTotalService tableTotalService;
+    SimpleTableService simpleTableService;
 
     /**
      * 通过首页点击查看表详情以及单表详情页按日期、下拉列表获取表的数据情况
@@ -26,13 +28,12 @@ public class SimpleTableController {
      * @return
      */
     @GetMapping("simple_table_total")
-    public JSONObject getSimpleTableInfo(@RequestParam("table_name") String tableName,
+    public String getSimpleTableInfo(@RequestParam("table_name") String tableName,
                                          @RequestParam("start_date") String startDate,
                                          @RequestParam("end_date") String endDate,
                                          @RequestParam("option_type") String optionType){
-        JSONObject result = new JSONObject();
+        JSONObject result = simpleTableService.getSimpleTable(startDate, endDate, optionType, tableName);
 
-
-        return result;
+        return result.toJSONString();
     }
 }
