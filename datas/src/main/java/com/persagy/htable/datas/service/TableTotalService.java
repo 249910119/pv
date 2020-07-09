@@ -9,18 +9,16 @@ public interface TableTotalService {
      * @param startDate
      * @param endDate
      * @param optionType
-     * @param queryTableName
      * @return
      */
-    public JSONObject getCollectDataByAllTable(String startDate, String endDate, String optionType, String queryTableName);
+    public JSONObject getCollectDataByAllTable(String startDate, String endDate, String optionType);
 
     /**
      * 按表汇总数据
      * @param startDate
      * @param endDate
      * @param optionType
-     * @param queryTableName
      * @return
      */
-    public JSONObject getCollectDataBySimpleTable(String startDate, String endDate, String optionType, String queryTableName);
+    public JSONObject getCollectDataBySimpleTable(String startDate, String endDate, String optionType);
 }

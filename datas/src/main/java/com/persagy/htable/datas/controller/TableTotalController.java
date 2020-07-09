@@ -29,9 +29,7 @@ public class TableTotalController {
                               @RequestParam("end_date") String endDate,
                               @RequestParam("option_type") String optionType){
 
-        String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
-
-        JSONObject result = tableTotalService.getCollectDataBySimpleTable(startDate, endDate, optionType, queryTableName);
+        JSONObject result = tableTotalService.getCollectDataBySimpleTable(startDate, endDate, optionType);
 
         return result.toJSONString();
     }
@@ -47,10 +45,7 @@ public class TableTotalController {
     public String getAllTableTotal(@RequestParam("start_date") String startDate,
                                        @RequestParam("end_date") String endDate,
                                        @RequestParam("option_type") String optionType){
-
-        String queryTableName = HbaseDBConstant.DB_NAME + HbaseDBConstant.ZILLION_META_STAT_2 + "202007";
-
-        JSONObject result = tableTotalService.getCollectDataByAllTable(startDate, endDate, optionType, queryTableName);
+        JSONObject result = tableTotalService.getCollectDataByAllTable(startDate, endDate, optionType);
 
         return result.toJSONString();
     }

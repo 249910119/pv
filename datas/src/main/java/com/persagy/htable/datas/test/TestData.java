@@ -28,9 +28,35 @@ import java.util.*;
 
 public class TestData {
 
+    public String subTableName(String rowKey){
+
+        StringBuffer buff = new StringBuffer("");
+
+        if (rowKey != null && !"".equals(rowKey)){
+
+            String s = rowKey.split(",")[1].split("\\.")[0];
+
+            String[] t = s.split("_");
+
+            for (int i = 2; i < t.length; i++) {
+                if (i < t.length - 1){
+                    buff.append(t[i]).append("_");
+                } else {
+                    buff.append(t[i]);
+                }
+            }
+        }
+
+        return buff.toString();
+    }
+
     @Test
     public void testDiff(){
-
+        String s = "zillion_data_ce_computelog,20200706105000,b2d4f0e74e05478cce244d70ef8d20f7";
+        String s1 = "20200706103500,zillion_index_fjd_0_computedetail.index_1,bd4eea8315889ef97225dabf39e4dd79";
+//        String s1 = "20200706104000,zillion_data_fjd_0_metercomputetime,d6d0314a25f5b3cda1dfe5ac4eabdf39";
+        String diff = this.subTableName(s1);
+        System.out.println(diff);
     }
 
     @Test

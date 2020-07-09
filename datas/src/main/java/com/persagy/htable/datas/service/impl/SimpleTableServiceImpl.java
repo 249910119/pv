@@ -53,6 +53,9 @@ public class SimpleTableServiceImpl implements SimpleTableService {
 
                             //zillion_data_ce_computelog, 20200706105000, b2d4f0e74e05478cce244d70ef8d20f7
                             String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
+
+                            String s = rowKeys.split(",")[0];
+
                             String flowTime = rowKeys.split(",")[1];
 
                             byte[] cellBytes = CellUtil.cloneValue(cell);
@@ -67,16 +70,11 @@ public class SimpleTableServiceImpl implements SimpleTableService {
                                 Long r = (Long) jsonObject.get(flowTime) + value;
                                 jsonObject.put(flowTime, r);
                             }
-
                         }
-
                     }
-
                 }
             }
         }
-
-
 
         HbaseUtils.closeHbaseConnection();
 

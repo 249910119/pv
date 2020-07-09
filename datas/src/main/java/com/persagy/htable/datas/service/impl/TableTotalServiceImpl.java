@@ -27,8 +27,32 @@ import java.util.Map;
 @Service
 public class TableTotalServiceImpl implements TableTotalService {
 
+    private List<String> getQueryTableName(Connection connection, String startDate, String endDate){
+
+        List<String> monthDiffList = DateUtils.getDateMonthDiff(startDate, endDate);
+        List<String> queryTableNames = new ArrayList<>();
+
+        if (monthDiffList != null && monthDiffList.size() > 0) {
+
+            for (String month : monthDiffList) {
+
+                List<String> allNameSpace = HbaseUtils.getAllNameSpace(connection);
+
+                for (String nameSpace : allNameSpace) {
+
+                    String queryTableName = nameSpace + ":" + HbaseDBConstant.ZILLION_META_STAT_1 + month;
+
+                    queryTableNames.add(queryTableName);
+
+                }
+            }
+        }
+
+        return queryTableNames;
+    }
+
     @Override
-    public JSONObject getCollectDataByAllTable(String startDate, String endDate, String optionType, String queryTableName) {
+    public JSONObject getCollectDataByAllTable(String startDate, String endDate, String optionType) {
 
         JSONObject jsonObject = new JSONObject();
 
@@ -39,46 +63,38 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
-        List<String> monthDiffList = DateUtils.getDateMonthDiff(startDate, endDate);
-        List<String> queryTableNames = new ArrayList<>();
-        if (monthDiffList != null && monthDiffList.size() > 0) {
+        List<String> queryTableNames = this.getQueryTableName(connection, startDate, endDate);
 
-            for (String month : monthDiffList) {
+        for (String queryTableName : queryTableNames) {
 
-                String queryTableName1 = HbaseDBConstant.ZILLION_META_STAT_1 + month;
-            }
+            ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
 
-        }
-        ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
+            for (Result result : resultScanner) {
 
-        for (Result result : resultScanner) {
+                List<Cell> cells = result.listCells();
 
-            List<Cell> cells = result.listCells();
+                if (cells != null && cells.size() > 0){
 
-            if (cells != null && cells.size() > 0){
+                    for (Cell cell : cells) {
 
-                for (Cell cell : cells) {
+                        String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
+                        String flowTime = rowKeys.split(",")[0];
 
-                    String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
-                    String flowTime = rowKeys.split(",")[0];
+                        byte[] cellBytes = CellUtil.cloneValue(cell);
+                        Long value = 0L;
+                        if (cellBytes.length > 0) {
+                            value = Bytes.toLong(cellBytes);
+                        }
 
-                    byte[] cellBytes = CellUtil.cloneValue(cell);
-                    Long value = 0L;
-                    if (cellBytes.length > 0) {
-                        value = Bytes.toLong(cellBytes);
+                        if (jsonObject.get(flowTime) == null){
+                            jsonObject.put(flowTime, value);
+                        } else {
+                            Long r = (Long) jsonObject.get(flowTime) + value;
+                            jsonObject.put(flowTime, r);
+                        }
                     }
-
-                    if (jsonObject.get(flowTime) == null){
-                        jsonObject.put(flowTime, value);
-                    } else {
-                        Long r = (Long) jsonObject.get(flowTime) + value;
-                        jsonObject.put(flowTime, r);
-                    }
-
                 }
-
             }
-
         }
 
         HbaseUtils.closeHbaseConnection();
@@ -87,7 +103,7 @@ public class TableTotalServiceImpl implements TableTotalService {
     }
 
     @Override
-    public JSONObject getCollectDataBySimpleTable(String startDate, String endDate, String optionType, String queryTableName) {
+    public JSONObject getCollectDataBySimpleTable(String startDate, String endDate, String optionType) {
 
         JSONObject jsonObject = new JSONObject();
 
@@ -98,36 +114,38 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
-        ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
+        List<String> queryTableNames = this.getQueryTableName(connection, startDate, endDate);
 
-        for (Result result : resultScanner) {
+        for (String queryTableName : queryTableNames) {
 
-            List<Cell> cells = result.listCells();
+            ResultScanner resultScanner = HbaseUtils.getResultScanner(connection, queryTableName, optionType, rowKeyFilter);
 
-            if (cells != null && cells.size() > 0){
+            for (Result result : resultScanner) {
 
-                for (Cell cell : cells) {
+                List<Cell> cells = result.listCells();
 
-                    String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
-                    String tableName = rowKeys.split(",")[1];
+                if (cells != null && cells.size() > 0){
 
-                    byte[] cellBytes = CellUtil.cloneValue(cell);
-                    Long value = 0L;
-                    if (cellBytes.length > 0) {
-                        value = Bytes.toLong(cellBytes);
+                    for (Cell cell : cells) {
+
+                        String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
+                        String tableName = rowKeys.split(",")[1];
+
+                        byte[] cellBytes = CellUtil.cloneValue(cell);
+                        Long value = 0L;
+                        if (cellBytes.length > 0) {
+                            value = Bytes.toLong(cellBytes);
+                        }
+
+                        if (jsonObject.get(tableName) == null){
+                            jsonObject.put(tableName, value);
+                        } else {
+                            Long r = (Long) jsonObject.get(tableName) + value;
+                            jsonObject.put(tableName, r);
+                        }
                     }
-
-                    if (jsonObject.get(tableName) == null){
-                        jsonObject.put(tableName, value);
-                    } else {
-                        Long r = (Long) jsonObject.get(tableName) + value;
-                        jsonObject.put(tableName, r);
-                    }
-
                 }
-
             }
-
         }
 
         HbaseUtils.closeHbaseConnection();
