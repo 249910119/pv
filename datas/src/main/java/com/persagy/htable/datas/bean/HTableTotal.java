@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HTableTotal {
+public class HTableTotal implements Comparable<HTableTotal> {
 
     //展示时间点
     private String flowTime;
@@ -18,4 +18,9 @@ public class HTableTotal {
     //汇总的数据总量
     private Long total;
 
+    @Override
+    public int compareTo(HTableTotal o) {
+        int i = o.getFlowTime().compareTo(o.getFlowTime());
+        return 0;
+    }
 }

@@ -59,7 +59,6 @@ public class SimpleTableServiceImpl implements SimpleTableService {
 
                         for (Cell cell : cells) {
 
-                            //zillion_data_ce_computelog, 20200706105000, b2d4f0e74e05478cce244d70ef8d20f7
                             String rowKeys = Bytes.toString(CellUtil.cloneRow(cell));
 
                             String s = rowKeys.split(",")[0];

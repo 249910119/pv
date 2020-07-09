@@ -13,7 +13,7 @@ import java.util.Set;
  * 工具包
  */
 public class CommonUtils {
-
+    
     /**
      * 截取表名
      * @param name

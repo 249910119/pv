@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class HbaseUtils {
 
@@ -31,7 +34,11 @@ public class HbaseUtils {
         conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
 
         try {
-            connection = ConnectionFactory.createConnection(conf);
+            //newCachedThreadPool
+            ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+            connection = ConnectionFactory.createConnection(conf, executorService);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

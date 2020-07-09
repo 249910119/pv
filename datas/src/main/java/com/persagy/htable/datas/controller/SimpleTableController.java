@@ -2,6 +2,7 @@ package com.persagy.htable.datas.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.persagy.htable.datas.bean.HTableTotal;
 import com.persagy.htable.datas.service.SimpleTableService;
 import com.persagy.htable.datas.service.TableTotalService;
 import com.sun.istack.NotNull;
@@ -9,6 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * 单表数据统计
@@ -35,5 +41,20 @@ public class SimpleTableController {
         JSONObject result = simpleTableService.getSimpleTable(startDate, endDate, optionType, tableName);
 
         return result.toJSONString();
+    }
+
+    @GetMapping("list_sort")
+    public List<HTableTotal> getStringSort(){
+
+        List<HTableTotal> l = new ArrayList<>();
+
+        l.add(new HTableTotal("202007071130", 54513215L));
+        l.add(new HTableTotal("202007071125", 54513215L));
+        l.add(new HTableTotal("202007071140", 54513215L));
+        l.add(new HTableTotal("202007071135", 54513215L));
+
+        Collections.sort(l);
+
+        return l;
     }
 }
