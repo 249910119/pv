@@ -1,11 +1,10 @@
 package com.persagy.htable.datas.utils;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.persagy.htable.datas.bean.TableInfo;
 import com.persagy.htable.datas.constant.HbaseDBConstant;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.NamespaceDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
@@ -15,16 +14,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * Hbase 工具类
+ */
 public class HbaseUtils {
 
     public static Connection connection = null;
     public static ResultScanner scanner = null;
     public static Table htable =  null;
+
+    /**
+     * 初始化 Hbase 连接
+     */
+    static{
+
+        Configuration conf = HBaseConfiguration.create();
+
+        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, HbaseDBConstant.HBASE_ZOOKEEPER_IP);
+        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
+
+        try {
+            connection = ConnectionFactory.createConnection(conf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+/*
 
     public static Connection getConnection(){
 
@@ -44,6 +62,7 @@ public class HbaseUtils {
         }
         return connection;
     }
+*/
 
     /**
      * 获取所有 nameSpace 名字
@@ -74,26 +93,6 @@ public class HbaseUtils {
 
         return nameSpaceList;
     }
-
-    /**
-     * 初始化 Hbase 连接
-     */
-    /*
-    static{
-
-        Configuration conf = HBaseConfiguration.create();
-
-        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_QUORUM, HbaseDBConstant.HBASE_ZOOKEEPER_IP);
-        conf.set(HbaseDBConstant.HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT, HbaseDBConstant.HBASE_ZOOKEEPER_PORT);
-
-        try {
-            connection = ConnectionFactory.createConnection(conf);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-    */
 
     /**
      * rowKey 过滤
@@ -236,9 +235,7 @@ public class HbaseUtils {
      */
     public static void closeHbaseConnection(){
         try {
-            if (connection != null){
-                connection.close();
-            }
+
             if (scanner != null){
                 scanner.close();
             }

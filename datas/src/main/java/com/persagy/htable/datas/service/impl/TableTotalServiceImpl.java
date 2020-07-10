@@ -1,27 +1,19 @@
 package com.persagy.htable.datas.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.persagy.htable.datas.bean.TableInfo;
 import com.persagy.htable.datas.constant.HbaseDBConstant;
 import com.persagy.htable.datas.service.TableTotalService;
 import com.persagy.htable.datas.utils.CommonUtils;
-import com.persagy.htable.datas.utils.DateUtils;
 import com.persagy.htable.datas.utils.HbaseUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
-import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.security.Key;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +26,10 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         JSONObject jsonObject = new JSONObject();
 
-        Connection connection = HbaseUtils.getConnection();
+        Connection connection = HbaseUtils.connection;
 
         Map<String, String> rowKeyFilterMap = new HashMap<>();
-        rowKeyFilterMap.put(startDate, endDate + "|");
+        rowKeyFilterMap.put(startDate, endDate);
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
@@ -75,8 +67,6 @@ public class TableTotalServiceImpl implements TableTotalService {
             }
         }
 
-        HbaseUtils.closeHbaseConnection();
-
         return jsonObject;
     }
 
@@ -85,10 +75,10 @@ public class TableTotalServiceImpl implements TableTotalService {
 
         JSONObject jsonObject = new JSONObject();
 
-        Connection connection = HbaseUtils.getConnection();
+        Connection connection = HbaseUtils.connection;
 
         Map<String, String> rowKeyFilterMap = new HashMap<>();
-        rowKeyFilterMap.put(startDate, endDate + "|");
+        rowKeyFilterMap.put(startDate, endDate);
 
         Filter rowKeyFilter = HbaseUtils.getRowKeyFilter(rowKeyFilterMap);
 
@@ -131,8 +121,6 @@ public class TableTotalServiceImpl implements TableTotalService {
                 }
             }
         }
-
-        HbaseUtils.closeHbaseConnection();
 
         return jsonObject;
     }

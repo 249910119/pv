@@ -26,7 +26,7 @@ public class SimpleTableServiceImpl implements SimpleTableService {
 
         JSONObject jsonObject = new JSONObject();
 
-        Connection connection = HbaseUtils.getConnection();
+        Connection connection = HbaseUtils.connection;
 
         Map<String, String> rowKeyFilterMap = new HashMap<>();
 
@@ -35,7 +35,7 @@ public class SimpleTableServiceImpl implements SimpleTableService {
         for (String hTableName : hTableNameList) {
             String[] v = hTableName.split(":");
             String startRowKey = v[1] + "," + DateUtils.getDateMinute(startDate) + "00";
-            String endRowKey = v[1] + "," + DateUtils.getDateMinute(endDate) + "00|";
+            String endRowKey = v[1] + "," + DateUtils.getDateMinute(endDate) + "00";
             rowKeyFilterMap.put(startRowKey, endRowKey);
         }
 
@@ -82,8 +82,6 @@ public class SimpleTableServiceImpl implements SimpleTableService {
                 }
             }
         }
-
-        HbaseUtils.closeHbaseConnection();
 
         return jsonObject;
     }

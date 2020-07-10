@@ -1,14 +1,5 @@
 package com.persagy.htable.datas.utils;
 
-import com.alibaba.fastjson.JSONObject;
-import com.persagy.htable.datas.constant.HbaseDBConstant;
-import org.apache.hadoop.hbase.client.Connection;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 /**
  * 工具包
  */

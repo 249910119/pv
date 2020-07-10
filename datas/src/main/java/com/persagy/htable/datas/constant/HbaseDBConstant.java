@@ -5,9 +5,6 @@ package com.persagy.htable.datas.constant;
  */
 public class HbaseDBConstant {
 
-    //数据库名称
-//    public static final String DB_NAME = "db_public:";
-
     //表名称
     public static final String ZILLION_META_STAT_1 = "zillion_meta_stat_1_";
     public static final String ZILLION_META_STAT_2 = "zillion_meta_stat_2_";
